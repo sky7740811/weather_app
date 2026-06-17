@@ -248,35 +248,37 @@ fun HourCell(h: HourData, date: String) {
                 alignment = Alignment.Center
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E3A)),
-                    shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF16162A)),
+                    shape = RoundedCornerShape(20.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder.copy(alpha = 0.5f)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
                 ) {
                     Column(Modifier.padding(0.dp)) {
                         Row(
-                            Modifier.fillMaxWidth().background(bg.copy(alpha = 0.3f)).padding(12.dp),
+                            Modifier.fillMaxWidth().background(bg, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)).padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(ico, fontSize = 28.sp)
-                            Spacer(Modifier.width(8.dp))
+                            Text(ico, fontSize = 32.sp)
+                            Spacer(Modifier.width(12.dp))
                             Column {
-                                Text("${h.temp}°C", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Color.White)
-                                Text(WeatherUtil.weatherDesc(h.weatherCode), fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                                Text("${h.temp}°C", fontWeight = FontWeight.Bold, fontSize = 26.sp, color = Color.White)
+                                Text(WeatherUtil.weatherDesc(h.weatherCode), fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f))
                             }
                         }
-                        HorizontalDivider(color = CardBorder)
-                        Column(Modifier.padding(12.dp)) {
-                            InfoRow("Date", date)
-                            InfoRow("Heure", "${h.hour}h")
+                        HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
+                        Column(Modifier.padding(14.dp)) {
+                            InfoRow("Date", date, Accent)
+                            InfoRow("Heure", "${h.hour}h", Accent2)
                             if (uvInfo != null) {
-                                InfoRow("UV", "${h.uv} — ${uvInfo.label}")
+                                InfoRow("UV", "${h.uv} — ${uvInfo.label}", Color(uvInfo.color))
                                 Spacer(Modifier.height(2.dp))
-                                Text("${uvInfo.spf}", fontSize = 11.sp, color = Color(uvInfo.color))
+                                if (uvInfo.spf.isNotEmpty()) {
+                                    Text("  ${uvInfo.spf}", fontSize = 11.sp, color = Color(uvInfo.color).copy(alpha = 0.8f))
+                                }
                             }
-                            if (h.rain != null) InfoRow("Pluie", "${h.rain}%")
-                            if (h.cloud != null) InfoRow("Nuages", "${h.cloud}%")
-                            if (h.wind != null) InfoRow("Vent", "${h.wind} km/h")
+                            if (h.rain != null) InfoRow("Pluie", "${h.rain}%", Cool)
+                            if (h.cloud != null) InfoRow("Nuages", "${h.cloud}%", Muted)
+                            if (h.wind != null) InfoRow("Vent", "${h.wind} km/h", Accent2)
                         }
                     }
                 }
@@ -286,9 +288,9 @@ fun HourCell(h: HourData, date: String) {
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+fun InfoRow(label: String, value: String, valueColor: Color = Text) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, fontSize = 13.sp, color = Muted)
-        Text(value, fontSize = 13.sp, color = Text, fontWeight = FontWeight.Medium)
+        Text(value, fontSize = 13.sp, color = valueColor, fontWeight = FontWeight.SemiBold)
     }
 }

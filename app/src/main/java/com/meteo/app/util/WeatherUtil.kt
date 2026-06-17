@@ -39,17 +39,17 @@ object WeatherUtil {
     }
 
     fun tempColor(t: Double): Long = when {
-        t >= 40 -> 0xFF6B0000
-        t >= 37 -> 0xFF8B0000
-        t >= 35 -> 0xFFC0392B
-        t >= 33 -> 0xFFD35400
-        t >= 30 -> 0xFFE67E22
-        t >= 28 -> 0xFFF39C12
-        t >= 25 -> 0xFF27AE60
-        t >= 22 -> 0xFF55EFC4
-        t >= 18 -> 0xFF3498DB
-        t >= 14 -> 0xFF2980B9
-        else -> 0xFF1A5276
+        t >= 40 -> 0xFF8B1A1A
+        t >= 37 -> 0xFFB33030
+        t >= 35 -> 0xFFC07030
+        t >= 33 -> 0xFFD49040
+        t >= 30 -> 0xFFD4A030
+        t >= 28 -> 0xFF60A040
+        t >= 25 -> 0xFF408050
+        t >= 22 -> 0xFF307080
+        t >= 18 -> 0xFF306090
+        t >= 14 -> 0xFF204878
+        else -> 0xFF183060
     }
 
     val DAYS = listOf("dim", "lun", "mar", "mer", "jeu", "ven", "sam")

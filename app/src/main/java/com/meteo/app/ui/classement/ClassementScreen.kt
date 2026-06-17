@@ -17,6 +17,8 @@ import com.meteo.app.ui.theme.*
 import com.meteo.app.util.WeatherUtil
 import java.util.*
 
+private enum class SortCol { RANK, VILLE, TEMP }
+
 @Composable
 fun ClassementScreen(viewModel: MainViewModel) {
     val classement by viewModel.classement.collectAsState()
@@ -32,6 +34,8 @@ fun ClassementScreen(viewModel: MainViewModel) {
     }
 
     var selectedDate by remember { mutableStateOf(dateList.first().first) }
+    var sortCol by remember { mutableStateOf(SortCol.RANK) }
+    var asc by remember { mutableStateOf(true) }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         Spacer(Modifier.height(8.dp))
@@ -65,6 +69,18 @@ fun ClassementScreen(viewModel: MainViewModel) {
                 CircularProgressIndicator(color = Accent)
             }
             else -> {
+                // Build ranked list with indices
+                val ranked = classement.mapIndexedNotNull { i, (temp, code) ->
+                    if (temp != null) Triple(i, temp, code) else null
+                }
+                val sorted = when (sortCol) {
+                    SortCol.RANK -> if (asc) ranked else ranked.reversed()
+                    SortCol.VILLE -> ranked.sortedBy { City.RANK_CITIES.getOrNull(it.first)?.name?.lowercase() ?: "" }.let { if (asc) it else it.reversed() }
+                    SortCol.TEMP -> ranked.sortedBy { it.second }.let { if (asc) it else it.reversed() }
+                }
+
+                fun arrow(col: SortCol) = if (sortCol == col) if (asc) " ▲" else " ▼" else ""
+
                 // Table header
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Card),
@@ -72,30 +88,34 @@ fun ClassementScreen(viewModel: MainViewModel) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(4.dp)) {
-                        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp)) {
-                            Text("#", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(24.dp))
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).clickable {
+                            if (sortCol == SortCol.RANK) asc = !asc else { sortCol = SortCol.RANK; asc = true }
+                        }) {
+                            Text("#${arrow(SortCol.RANK)}", color = if (sortCol == SortCol.RANK) Accent else Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(24.dp))
                             Text("", modifier = Modifier.width(28.dp))
-                            Text("Ville", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                            Text("°C", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(36.dp))
+                            Text("Ville${arrow(SortCol.VILLE)}", color = if (sortCol == SortCol.VILLE) Accent else Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.weight(1f).clickable {
+                                if (sortCol == SortCol.VILLE) asc = !asc else { sortCol = SortCol.VILLE; asc = true }
+                            })
+                            Text("°C${arrow(SortCol.TEMP)}", color = if (sortCol == SortCol.TEMP) Accent else Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(36.dp).clickable {
+                                if (sortCol == SortCol.TEMP) asc = !asc else { sortCol = SortCol.TEMP; asc = true }
+                            })
                         }
                         HorizontalDivider(color = CardBorder)
-                        classement.forEachIndexed { rank, (temp, code) ->
-                            if (temp != null) {
-                                val name = City.RANK_CITIES.getOrNull(rank)?.name ?: "?"
-                                val tcolor = when {
-                                    temp >= 37 -> Hot; temp >= 35 -> Warm; temp >= 30 -> Cool; else -> Cold
-                                }
-                                Row(
-                                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp).clickable { },
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("${rank + 1}", color = Muted, fontSize = 12.sp, modifier = Modifier.width(24.dp))
-                                    Text(WeatherUtil.weatherIcon(code?.toInt()), fontSize = 14.sp, modifier = Modifier.width(28.dp))
-                                    Text(name, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                                    Text("${temp.toInt()}°", color = tcolor, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.width(36.dp))
-                                }
-                                if (rank < classement.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
+                        sorted.forEachIndexed { displayRank, (origIdx, temp, code) ->
+                            val name = City.RANK_CITIES.getOrNull(origIdx)?.name ?: "?"
+                            val tcolor = when {
+                                temp >= 37 -> Hot; temp >= 35 -> Warm; temp >= 30 -> Cool; else -> Cold
                             }
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp).clickable { },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("${displayRank + 1}", color = Muted, fontSize = 12.sp, modifier = Modifier.width(24.dp))
+                                Text(WeatherUtil.weatherIcon(code?.toInt()), fontSize = 14.sp, modifier = Modifier.width(28.dp))
+                                Text(name, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                                Text("${temp.toInt()}°", color = tcolor, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.width(36.dp))
+                            }
+                            if (displayRank < sorted.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
                         }
                     }
                 }
