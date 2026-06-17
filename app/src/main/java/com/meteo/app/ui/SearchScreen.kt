@@ -11,6 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +23,9 @@ import com.meteo.app.ui.theme.*
 fun SearchScreen(viewModel: MainViewModel) {
     var query by remember { mutableStateOf("") }
     val suggestions by viewModel.suggestions.collectAsState()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     Column(Modifier.fillMaxSize().background(Bg).padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -30,7 +36,7 @@ fun SearchScreen(viewModel: MainViewModel) {
                     viewModel.searchSuggestions(it)
                 },
                 placeholder = { Text("Rechercher une ville...", color = Muted) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).focusRequester(focusRequester),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Accent,

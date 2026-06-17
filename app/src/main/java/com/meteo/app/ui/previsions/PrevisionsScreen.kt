@@ -213,7 +213,9 @@ fun DayCard(date: String, hours: List<HourData>, city: City) {
             // Hourly scroll
             Row(Modifier.horizontalScroll(rememberScrollState())) {
                 hours.sortedBy { it.hour }.forEach { h ->
-                    HourCell(h, date)
+                    val isCanicule = h.hour in 10..20 && h.temp >= 36
+                    val isNuitTrop = (h.hour in 21..23 || h.hour in 0..9) && h.temp >= 21
+                    HourCell(h, date, isCanicule, isNuitTrop)
                 }
             }
         }
@@ -221,12 +223,13 @@ fun DayCard(date: String, hours: List<HourData>, city: City) {
 }
 
 @Composable
-fun HourCell(h: HourData, date: String) {
+fun HourCell(h: HourData, date: String, isCanicule: Boolean = false, isNuitTrop: Boolean = false) {
     var showPopup by remember { mutableStateOf(false) }
     val bg = Color(WeatherUtil.tempColor(h.temp.toDouble()))
     val ico = WeatherUtil.weatherIcon(h.weatherCode)
     val uvColor = h.uv?.let { WeatherUtil.uvLevel(it).color } ?: 0x00000000
     val uvInfo = h.uv?.let { WeatherUtil.uvLevel(it) }
+    val highlight = if (isCanicule || isNuitTrop) BorderStroke(2.dp, Color(0xFFFFCC00)) else null
 
     Box {
         Column(
@@ -236,6 +239,7 @@ fun HourCell(h: HourData, date: String) {
                 .padding(horizontal = 1.dp)
                 .clip(RoundedCornerShape(6.dp))
                 .background(bg)
+                .then(if (highlight != null) Modifier.border(highlight, RoundedCornerShape(6.dp)) else Modifier)
                 .clickable { showPopup = true }
                 .padding(vertical = 4.dp)
         ) {
