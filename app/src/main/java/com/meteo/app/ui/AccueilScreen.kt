@@ -111,9 +111,8 @@ fun AccueilContent(data: ForecastResponse, cityName: String) {
                 DetailRow("💧 Pluie", "${rain ?: "-"}%")
                 DetailRow("☁️ Nuages", "${cloud ?: "-"}%")
                 if (uvInfo != null) {
-                    DetailRow("☀️ UV", "${uv} — ${uvInfo.label}")
-                    Spacer(Modifier.height(2.dp))
-                    Text("  ${uvInfo.spf}", fontSize = 12.sp, color = Color(uvInfo.color))
+                    val spfTag = if (uvInfo.spf.isNotEmpty()) " [${uvInfo.spf}]" else ""
+                    DetailRow("☀️ UV", "${uv} — ${uvInfo.label}$spfTag", Color(uvInfo.color))
                 }
             }
         }
@@ -121,9 +120,9 @@ fun AccueilContent(data: ForecastResponse, cityName: String) {
 }
 
 @Composable
-fun DetailRow(label: String, value: String) {
+fun DetailRow(label: String, value: String, valueColor: Color = Text) {
     Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, fontSize = 14.sp, color = Muted)
-        Text(value, fontSize = 14.sp, color = Text, fontWeight = FontWeight.Medium)
+        Text(value, fontSize = 14.sp, color = valueColor, fontWeight = FontWeight.Medium)
     }
 }

@@ -72,7 +72,7 @@ fun HistoryScreen(viewModel: MainViewModel) {
                 Row(
                     Modifier.fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.selectCity(city) }
+                        .clickable { viewModel.selectCity(city); viewModel.setTab(1) }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
