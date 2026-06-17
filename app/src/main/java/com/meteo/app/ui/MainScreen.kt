@@ -62,7 +62,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
 @Composable
 fun BottomNavBar(selected: Int, onSelect: (Int) -> Unit) {
     NavigationBar(containerColor = Card, tonalElevation = 0.dp) {
-        val items = listOf("🏠 Accueil", "☀️ Prévisions", "🏆 Classement", "⭐ Favoris", "🕐 Historique")
+        val items = listOf("🏠 Accueil", "☀️ Prev.", "🏆 Class.", "⭐ Fav.", "🕐 Hist.")
         items.forEachIndexed { i, label ->
             NavigationBarItem(
                 selected = selected == i,

@@ -75,9 +75,13 @@ fun AccueilContent(data: ForecastResponse, cityName: String) {
     val maxToday = temps.maxOrNull() ?: 0
     val minToday = temps.minOrNull() ?: 0
 
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(Modifier.height(12.dp))
-        Text(cityName, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Text)
+    val todayDateStr = String.format("%02d/%02d/%04d", now.get(Calendar.DAY_OF_MONTH), now.get(Calendar.MONTH) + 1, now.get(Calendar.YEAR))
+    val forecastHour = hours.time.getOrNull(nowIdx)?.substringAfter("T")?.substringBefore(":") ?: "$currentHour"
+
+    Column(Modifier.fillMaxSize(0.95f), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(8.dp))
+        Text(cityName, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Text)
+        Text("$todayDateStr — ${forecastHour}h", fontSize = 12.sp, color = Muted)
 
         Spacer(Modifier.height(20.dp))
 

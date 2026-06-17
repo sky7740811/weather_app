@@ -270,11 +270,8 @@ fun HourCell(h: HourData, date: String) {
                             InfoRow("Date", date, Accent)
                             InfoRow("Heure", "${h.hour}h", Accent2)
                             if (uvInfo != null) {
-                                InfoRow("UV", "${h.uv} — ${uvInfo.label}", Color(uvInfo.color))
-                                Spacer(Modifier.height(2.dp))
-                                if (uvInfo.spf.isNotEmpty()) {
-                                    Text("  ${uvInfo.spf}", fontSize = 11.sp, color = Color(uvInfo.color).copy(alpha = 0.8f))
-                                }
+                                val spfTag = if (uvInfo.spf.isNotEmpty()) " [${uvInfo.spf}]" else ""
+                                InfoRow("UV", "${h.uv} — ${uvInfo.label}$spfTag", Color(uvInfo.color))
                             }
                             if (h.rain != null) InfoRow("Pluie", "${h.rain}%", Cool)
                             if (h.cloud != null) InfoRow("Nuages", "${h.cloud}%", Muted)
