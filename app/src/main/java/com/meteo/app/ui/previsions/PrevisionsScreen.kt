@@ -102,12 +102,12 @@ fun ForecastContent(data: ForecastResponse, city: City) {
     }
 
     // Alerts
-    val alerts = generateAlerts(daysMap)
+    val (canicule, nuitTropicale) = generateAlerts(daysMap)
 
     LazyColumn(Modifier.fillMaxSize()) {
         // Alert box
-        if (alerts.isNotEmpty()) {
-            item { AlertBox(alerts) }
+        if (canicule.isNotEmpty() || nuitTropicale.isNotEmpty()) {
+            item { AlertBox(canicule, nuitTropicale) }
         }
 
         // Day cards
@@ -118,10 +118,11 @@ fun ForecastContent(data: ForecastResponse, city: City) {
     }
 }
 
-fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
+fun generateAlerts(daysMap: Map<String, List<HourData>>): Pair<List<String>, List<String>> {
     val dayHours = 10..20
     val nightHours = (21..23).toList() + (0..9).toList()
-    val alerts = mutableListOf<String>()
+    val canicule = mutableListOf<String>()
+    val nuitTropicale = mutableListOf<String>()
 
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE)
     val sorted = daysMap.entries.sortedBy { it.key }
@@ -137,7 +138,7 @@ fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
                 val parsed = sdf.parse(date) ?: continue
                 val cal = Calendar.getInstance().apply { time = parsed }
                 val dayName = WeatherUtil.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]
-                alerts.add("☀️ $dt/$mo ($dayName) ${hot.first().hour}h~${hot.last().hour}h")
+                canicule.add("$dt/$mo ($dayName) ${hot.first().hour}h~${hot.last().hour}h")
             }
         }
         if (nightMin <= 21 && hours.any { it.hour in nightHours && it.temp >= 21 }) {
@@ -146,15 +147,16 @@ fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
             val parsed = sdf.parse(date) ?: continue
             val cal = Calendar.getInstance().apply { time = parsed }
             val dayName = WeatherUtil.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]
-            alerts.add("🌙 $dt/$mo ($dayName)")
+            nuitTropicale.add("$dt/$mo ($dayName)")
         }
     }
-    return alerts
+    return canicule to nuitTropicale
 }
 
 @Composable
-fun AlertBox(alerts: List<String>) {
+fun AlertBox(canicule: List<String>, nuitTropicale: List<String>) {
     var expanded by remember { mutableStateOf(false) }
+    val total = canicule.size + nuitTropicale.size
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A0F0F)),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4DE74C3C)),
@@ -162,12 +164,27 @@ fun AlertBox(alerts: List<String>) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
     ) {
         Column(Modifier.padding(12.dp).clickable { expanded = !expanded }) {
-            Text("⚠️ ${alerts.size} alerte(s)", color = Hot, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text("⚠️ $total alerte(s)", color = Hot, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             if (expanded) {
                 Spacer(Modifier.height(6.dp))
                 HorizontalDivider(color = Color(0x4DE74C3C))
                 Spacer(Modifier.height(6.dp))
-                alerts.forEach { Text(it, color = Hot, fontSize = 12.sp) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    if (canicule.isNotEmpty()) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Alert Canicule", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Hot)
+                            Spacer(Modifier.height(4.dp))
+                            canicule.forEach { Text(it, fontSize = 11.sp, color = Hot) }
+                        }
+                    }
+                    if (nuitTropicale.isNotEmpty()) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Alert Nuit Tropicale", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Hot)
+                            Spacer(Modifier.height(4.dp))
+                            nuitTropicale.forEach { Text(it, fontSize = 11.sp, color = Hot) }
+                        }
+                    }
+                }
             }
         }
     }
