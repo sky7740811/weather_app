@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -153,14 +154,21 @@ fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
 
 @Composable
 fun AlertBox(alerts: List<String>) {
+    var expanded by remember { mutableStateOf(false) }
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A0F0F)),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4DE74C3C)),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
     ) {
-        Column(Modifier.padding(12.dp)) {
-            alerts.forEach { Text(it, color = Color(0xFFFF6B6B), fontSize = 12.sp) }
+        Column(Modifier.padding(12.dp).clickable { expanded = !expanded }) {
+            Text("⚠️ ${alerts.size} alerte(s)", color = Hot, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            if (expanded) {
+                Spacer(Modifier.height(6.dp))
+                HorizontalDivider(color = Color(0x4DE74C3C))
+                Spacer(Modifier.height(6.dp))
+                alerts.forEach { Text(it, color = Hot, fontSize = 12.sp) }
+            }
         }
     }
 }
@@ -193,34 +201,57 @@ fun DayCard(date: String, hours: List<HourData>, city: City) {
                     HourCell(h)
                 }
             }
-            // UV row
-            Row(Modifier.horizontalScroll(rememberScrollState())){
-                hours.sortedBy { it.hour }.forEach { h ->
-                    val uvColor = h.uv?.let { WeatherUtil.uvLevel(it).color } ?: 0x00000000
-                    Box(Modifier.width(36.dp).height(5.dp).padding(horizontal = 1.dp).background(Color(uvColor), RoundedCornerShape(2.dp)))
-                }
-            }
         }
     }
 }
 
 @Composable
 fun HourCell(h: HourData) {
+    var showPopup by remember { mutableStateOf(false) }
     val bg = Color(WeatherUtil.tempColor(h.temp.toDouble()))
     val ico = WeatherUtil.weatherIcon(h.weatherCode)
+    val uvColor = h.uv?.let { WeatherUtil.uvLevel(it).color } ?: 0x00000000
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(36.dp)
-            .padding(horizontal = 1.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(bg)
-            .clickable { /* show tooltip */ }
-            .padding(vertical = 4.dp)
-    ) {
-        Text("${h.hour}h", fontSize = 9.sp, color = Text.copy(alpha = 0.7f))
-        if (ico.isNotEmpty()) Text(ico, fontSize = 10.sp)
-        Text("${h.temp}°", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+    Box {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(40.dp)
+                .padding(horizontal = 1.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(bg)
+                .clickable { showPopup = true }
+                .padding(vertical = 4.dp)
+        ) {
+            Text("${h.hour}h", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+            if (ico.isNotEmpty()) Text(ico, fontSize = 12.sp)
+            Text("${h.temp}°", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+            if (uvColor != 0x00000000L) {
+                Box(Modifier.fillMaxWidth().height(3.dp).padding(horizontal = 8.dp).background(Color(uvColor), RoundedCornerShape(2.dp)))
+            }
+        }
+
+        if (showPopup) {
+            Popup(
+                onDismissRequest = { showPopup = false },
+                alignment = Alignment.Center
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Card),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("${h.hour}h - ${h.temp}°C", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text(WeatherUtil.weatherDesc(h.weatherCode), fontSize = 13.sp)
+                        if (h.uv != null) Text("UV: ${h.uv}", fontSize = 13.sp)
+                        if (h.rain != null) Text("Pluie: ${h.rain}%", fontSize = 13.sp)
+                        if (h.cloud != null) Text("Nuages: ${h.cloud}%", fontSize = 13.sp)
+                        if (h.wind != null) Text("Vent: ${h.wind} km/h", fontSize = 13.sp)
+                    }
+                }
+            }
+        }
     }
 }
