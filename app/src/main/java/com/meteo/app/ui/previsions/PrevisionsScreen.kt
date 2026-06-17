@@ -48,68 +48,27 @@ fun PrevisionsScreen(viewModel: MainViewModel) {
 
 @Composable
 fun SearchBar(viewModel: MainViewModel) {
-    var query by remember { mutableStateOf("") }
-    var showDropdown by remember { mutableStateOf(false) }
-    val suggestions by viewModel.suggestions.collectAsState()
-
-    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = {
-                    query = it
-                    viewModel.searchSuggestions(it)
-                    showDropdown = it.length >= 2
-                },
-                placeholder = { Text("Ville...", color = Muted) },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Accent,
-                    unfocusedBorderColor = CardBorder,
-                    focusedTextColor = Text,
-                    unfocusedTextColor = Text,
-                    cursorColor = Accent
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    if (query.isNotBlank()) {
-                        viewModel.searchCity(query.trim())
-                        query = ""
-                        showDropdown = false
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Accent),
-                shape = RoundedCornerShape(8.dp)
-            ) { Text("OK") }
-        }
-
-        if (showDropdown && suggestions.isNotEmpty()) {
-            DropdownMenu(
-                expanded = true,
-                onDismissRequest = { showDropdown = false },
-                modifier = Modifier.fillMaxWidth().background(Card).then(Modifier.clip(RoundedCornerShape(8.dp)))
-            ) {
-                suggestions.forEach { f ->
-                    val p = f.properties
-                    val label = buildString {
-                        append(p.name)
-                        if (p.postcode != null) append(" (${p.postcode})")
-                    }
-                    DropdownMenuItem(
-                        text = { Text(label, fontSize = 13.sp, color = Text) },
-                        onClick = {
-                            viewModel.selectSuggestion(f)
-                            query = ""
-                            showDropdown = false
-                        }
-                    )
-                }
-            }
-        }
+    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = "",
+            onValueChange = { },
+            placeholder = { Text("Rechercher une ville...", color = Muted) },
+            modifier = Modifier.weight(1f).clickable { viewModel.setSearchMode(true) },
+            singleLine = true,
+            enabled = false,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledBorderColor = CardBorder,
+                disabledTextColor = Text,
+                disabledPlaceholderColor = Muted
+            ),
+            shape = RoundedCornerShape(8.dp)
+        )
+        Spacer(Modifier.width(8.dp))
+        Button(
+            onClick = { viewModel.setSearchMode(true) },
+            colors = ButtonDefaults.buttonColors(containerColor = Accent),
+            shape = RoundedCornerShape(8.dp)
+        ) { Text("OK") }
     }
 }
 

@@ -43,11 +43,17 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
         containerColor = Bg
     ) { padding ->
         Box(Modifier.padding(padding).fillMaxSize()) {
-            when (tab) {
-                0 -> PrevisionsScreen(viewModel)
-                1 -> ClassementScreen(viewModel)
-                2 -> FavoritesScreen(viewModel)
-                3 -> HistoryScreen(viewModel)
+            val searchMode by viewModel.searchMode.collectAsState()
+            if (searchMode) {
+                SearchScreen(viewModel)
+            } else {
+                when (tab) {
+                    0 -> AccueilScreen(viewModel)
+                    1 -> PrevisionsScreen(viewModel)
+                    2 -> ClassementScreen(viewModel)
+                    3 -> FavoritesScreen(viewModel)
+                    4 -> HistoryScreen(viewModel)
+                }
             }
         }
     }
@@ -56,7 +62,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
 @Composable
 fun BottomNavBar(selected: Int, onSelect: (Int) -> Unit) {
     NavigationBar(containerColor = Card, tonalElevation = 0.dp) {
-        val items = listOf("☀️ Prévisions", "🏆 Classement", "⭐ Favoris", "🕐 Historique")
+        val items = listOf("🏠 Accueil", "☀️ Prévisions", "🏆 Classement", "⭐ Favoris", "🕐 Historique")
         items.forEachIndexed { i, label ->
             NavigationBarItem(
                 selected = selected == i,

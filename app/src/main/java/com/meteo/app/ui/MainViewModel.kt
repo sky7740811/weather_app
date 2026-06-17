@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     val repo = MeteoRepository()
@@ -52,6 +53,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private var searchJob: Job? = null
 
+    private val _searchMode = MutableStateFlow(false)
+    val searchMode: StateFlow<Boolean> = _searchMode
+
+    fun setSearchMode(on: Boolean) { _searchMode.value = on }
+
     init {
         val cache = prefs.loadForecastCache()
         if (cache != null) {
@@ -72,6 +78,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadForecast() {
         if (!_canRefresh.value) return
+        val cache = prefs.loadForecastCache()
+        val now = System.currentTimeMillis()
+        if (cache != null) {
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = cache.third
+            val cacheHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
+            cal.timeInMillis = now
+            val nowHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
+            if (cacheHour == nowHour) {
+                _city.value = cache.first
+                _forecast.value = cache.second
+                return
+            }
+        }
         _canRefresh.value = false
         viewModelScope.launch {
             _loading.value = true
