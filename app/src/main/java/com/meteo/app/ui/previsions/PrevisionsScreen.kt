@@ -254,21 +254,42 @@ fun HourCell(h: HourData) {
                 alignment = Alignment.Center
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Card),
-                    shape = RoundedCornerShape(12.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E3A)),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("${h.hour}h - ${h.temp}°C", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(Modifier.height(4.dp))
-                        Text(WeatherUtil.weatherDesc(h.weatherCode), fontSize = 13.sp)
-                        if (h.uv != null) Text("UV: ${h.uv}", fontSize = 13.sp)
-                        if (h.rain != null) Text("Pluie: ${h.rain}%", fontSize = 13.sp)
-                        if (h.cloud != null) Text("Nuages: ${h.cloud}%", fontSize = 13.sp)
-                        if (h.wind != null) Text("Vent: ${h.wind} km/h", fontSize = 13.sp)
+                    Column(Modifier.padding(0.dp)) {
+                        Row(
+                            Modifier.fillMaxWidth().background(bg.copy(alpha = 0.3f)).padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(ico, fontSize = 28.sp)
+                            Spacer(Modifier.width(8.dp))
+                            Column {
+                                Text("${h.temp}°C", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Color.White)
+                                Text(WeatherUtil.weatherDesc(h.weatherCode), fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                            }
+                        }
+                        HorizontalDivider(color = CardBorder)
+                        Column(Modifier.padding(12.dp)) {
+                            InfoRow("Heure", "${h.hour}h")
+                            if (h.uv != null) InfoRow("UV", "${h.uv}")
+                            if (h.rain != null) InfoRow("Pluie", "${h.rain}%")
+                            if (h.cloud != null) InfoRow("Nuages", "${h.cloud}%")
+                            if (h.wind != null) InfoRow("Vent", "${h.wind} km/h")
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, fontSize = 13.sp, color = Muted)
+        Text(value, fontSize = 13.sp, color = Text, fontWeight = FontWeight.Medium)
     }
 }
