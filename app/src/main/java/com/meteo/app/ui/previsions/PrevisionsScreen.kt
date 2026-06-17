@@ -29,10 +29,15 @@ fun PrevisionsScreen(viewModel: MainViewModel) {
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
     val city by viewModel.city.collectAsState()
+    val lastUpdate by viewModel.lastUpdate.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         // Search bar
         SearchBar(viewModel)
+
+        if (lastUpdate != null) {
+            Text("Dernière màj : $lastUpdate", fontSize = 11.sp, color = Muted, modifier = Modifier.align(Alignment.End))
+        }
 
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

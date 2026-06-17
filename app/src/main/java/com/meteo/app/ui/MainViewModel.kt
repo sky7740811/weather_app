@@ -56,6 +56,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _searchMode = MutableStateFlow(false)
     val searchMode: StateFlow<Boolean> = _searchMode
 
+    private val _lastUpdate = MutableStateFlow<String?>(null)
+    val lastUpdate: StateFlow<String?> = _lastUpdate
+
     fun setSearchMode(on: Boolean) { _searchMode.value = on }
 
     init {
@@ -87,8 +90,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             cal.timeInMillis = now
             val nowHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
             if (cacheHour == nowHour) {
-                _city.value = cache.first
                 _forecast.value = cache.second
+                val d = Calendar.getInstance().apply { timeInMillis = cache.third }
+                _lastUpdate.value = String.format("%02d/%02d %02d:%02d", d.get(Calendar.DAY_OF_MONTH), d.get(Calendar.MONTH)+1, d.get(Calendar.HOUR_OF_DAY), d.get(Calendar.MINUTE))
                 return
             }
         }
@@ -100,6 +104,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val data = repo.getForecast(_city.value.lat, _city.value.lon)
                 _forecast.value = data
                 prefs.saveForecastCache(_city.value, data)
+                val now2 = Calendar.getInstance()
+                _lastUpdate.value = String.format("%02d/%02d %02d:%02d", now2.get(Calendar.DAY_OF_MONTH), now2.get(Calendar.MONTH)+1, now2.get(Calendar.HOUR_OF_DAY), now2.get(Calendar.MINUTE))
             } catch (e: Exception) {
                 _error.value = e.message ?: "Erreur de chargement"
             }
