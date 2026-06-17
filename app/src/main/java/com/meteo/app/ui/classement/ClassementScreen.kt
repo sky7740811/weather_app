@@ -23,7 +23,6 @@ fun ClassementScreen(viewModel: MainViewModel) {
     val loading by viewModel.classLoading.collectAsState()
 
     // Date buttons
-    val today = Calendar.getInstance()
     val dateList = (0 until 7).map { d ->
         val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, d) }
         val mm = String.format("%02d", cal.get(Calendar.MONTH) + 1)
@@ -79,7 +78,7 @@ fun ClassementScreen(viewModel: MainViewModel) {
                             Text("Ville", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.weight(1f))
                             Text("°C", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(36.dp))
                         }
-                        Divider(color = CardBorder)
+                        HorizontalDivider(color = CardBorder)
                         classement.forEachIndexed { rank, (temp, code) ->
                             if (temp != null) {
                                 val name = City.RANK_CITIES.getOrNull(rank)?.name ?: "?"
@@ -95,7 +94,7 @@ fun ClassementScreen(viewModel: MainViewModel) {
                                     Text(name, fontSize = 13.sp, modifier = Modifier.weight(1f))
                                     Text("${temp.toInt()}°", color = tcolor, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.width(36.dp))
                                 }
-                                if (rank < classement.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
+                                if (rank < classement.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
                             }
                         }
                     }

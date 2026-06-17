@@ -50,7 +50,7 @@ fun FavoritesScreen(viewModel: MainViewModel) {
                         favs = prefs.getFavs()
                     }) { Text("✕", color = Danger) }
                 }
-                if (i < favs.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
+                if (i < favs.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
             }
         }
     }
@@ -87,7 +87,7 @@ fun HistoryScreen(viewModel: MainViewModel) {
                         hist = prefs.getHist()
                     }) { Text("✕", color = Danger) }
                 }
-                if (i < hist.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
+                if (i < hist.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
             }
         }
     }
