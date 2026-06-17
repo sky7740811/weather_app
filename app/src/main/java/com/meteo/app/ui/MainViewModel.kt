@@ -62,10 +62,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setSearchMode(on: Boolean) { _searchMode.value = on }
 
     init {
-        val cache = prefs.loadForecastCache()
+        val cache = prefs.loadForecastCache(City.DEFAULT)
         if (cache != null) {
-            _city.value = cache.first
-            _forecast.value = cache.second
+            _forecast.value = cache.first
         }
         loadForecast()
     }
@@ -76,25 +75,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _city.value = city
         _isFav.value = prefs.isFav(city.name)
         prefs.addHist(city)
+        val cache = prefs.loadForecastCache(city)
+        val now = System.currentTimeMillis()
+        if (cache != null && now - cache.second < 30 * 60 * 1000L) {
+            _forecast.value = cache.first
+            val d = Calendar.getInstance().apply { timeInMillis = cache.second }
+            _lastUpdate.value = String.format("%02d/%02d %02d:%02d", d.get(Calendar.DAY_OF_MONTH), d.get(Calendar.MONTH)+1, d.get(Calendar.HOUR_OF_DAY), d.get(Calendar.MINUTE))
+            return
+        }
         loadForecast(force = true)
     }
 
     fun loadForecast(force: Boolean = false) {
         if (!_canRefresh.value && !force) return
-        val cache = prefs.loadForecastCache()
+        val cache = prefs.loadForecastCache(_city.value)
         val now = System.currentTimeMillis()
-        if (cache != null && !force) {
-            val cal = Calendar.getInstance()
-            cal.timeInMillis = cache.third
-            val cacheHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
-            cal.timeInMillis = now
-            val nowHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
-            if (cacheHour == nowHour) {
-                _forecast.value = cache.second
-                val d = Calendar.getInstance().apply { timeInMillis = cache.third }
-                _lastUpdate.value = String.format("%02d/%02d %02d:%02d", d.get(Calendar.DAY_OF_MONTH), d.get(Calendar.MONTH)+1, d.get(Calendar.HOUR_OF_DAY), d.get(Calendar.MINUTE))
-                return
-            }
+        if (cache != null && !force && now - cache.second < 30 * 60 * 1000L) {
+            _forecast.value = cache.first
+            val d = Calendar.getInstance().apply { timeInMillis = cache.second }
+            _lastUpdate.value = String.format("%02d/%02d %02d:%02d", d.get(Calendar.DAY_OF_MONTH), d.get(Calendar.MONTH)+1, d.get(Calendar.HOUR_OF_DAY), d.get(Calendar.MINUTE))
+            return
         }
         _canRefresh.value = false
         viewModelScope.launch {

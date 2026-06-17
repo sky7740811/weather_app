@@ -43,23 +43,22 @@ class Preferences(context: Context) {
         prefs.edit().putString("hist", gson.toJson(list)).apply()
     }
 
-    // Forecast cache
+    // Forecast cache (per city, 30min TTL)
     fun saveForecastCache(city: City, forecast: ForecastResponse) {
+        val key = "cache_${city.name}"
         prefs.edit()
-            .putString("cache_city", gson.toJson(city))
-            .putString("cache_forecast", gson.toJson(forecast))
-            .putLong("cache_time", System.currentTimeMillis())
+            .putString("${key}_forecast", gson.toJson(forecast))
+            .putLong("${key}_time", System.currentTimeMillis())
             .apply()
     }
 
-    fun loadForecastCache(): Triple<City, ForecastResponse, Long>? {
-        val cityJson = prefs.getString("cache_city", null) ?: return null
-        val forecastJson = prefs.getString("cache_forecast", null) ?: return null
-        val cacheTime = prefs.getLong("cache_time", 0L)
+    fun loadForecastCache(city: City): Pair<ForecastResponse, Long>? {
+        val key = "cache_${city.name}"
+        val forecastJson = prefs.getString("${key}_forecast", null) ?: return null
+        val cacheTime = prefs.getLong("${key}_time", 0L)
         return try {
-            val city = gson.fromJson(cityJson, City::class.java)
             val forecast = gson.fromJson(forecastJson, ForecastResponse::class.java)
-            Triple(city, forecast, cacheTime)
+            Pair(forecast, cacheTime)
         } catch (e: Exception) { null }
     }
 
