@@ -26,6 +26,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _canRefresh = MutableStateFlow(true)
     val canRefresh: StateFlow<Boolean> = _canRefresh
 
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _classement = MutableStateFlow<List<Pair<Double?, Int?>>>(emptyList())
+    val classement: StateFlow<List<Pair<Double?, Int?>>> = _classement
+
+    private val _classLoading = MutableStateFlow(false)
+    val classLoading: StateFlow<Boolean> = _classLoading
+
+    private val _isFav = MutableStateFlow(false)
+    val isFav: StateFlow<Boolean> = _isFav
+
+    private val _tab = MutableStateFlow(0)
+    val tab: StateFlow<Int> = _tab
+
     init {
         val cache = prefs.loadForecastCache()
         if (cache != null) {
@@ -34,26 +52,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         loadForecast()
     }
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    // Classement
-    private val _classement = MutableStateFlow<List<Pair<Double?, Int?>>>(emptyList())
-    val classement: StateFlow<List<Pair<Double?, Int?>>> = _classement
-
-    private val _classLoading = MutableStateFlow(false)
-    val classLoading: StateFlow<Boolean> = _classLoading
-
-    // Fav button state
-    private val _isFav = MutableStateFlow(false)
-    val isFav: StateFlow<Boolean> = _isFav
-
-    // Selected tab
-    private val _tab = MutableStateFlow(0)
-    val tab: StateFlow<Int> = _tab
 
     fun setTab(t: Int) { _tab.value = t }
 
