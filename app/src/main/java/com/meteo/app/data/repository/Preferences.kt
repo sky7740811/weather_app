@@ -38,6 +38,10 @@ class Preferences(context: Context) {
         } catch (e: Exception) { mutableListOf() }
     }
 
+    fun saveHist(list: List<City>) {
+        prefs.edit().putString("hist", gson.toJson(list)).apply()
+    }
+
     fun addHist(city: City) {
         val list = getHist().toMutableList()
         list.removeAll { it.name == city.name }

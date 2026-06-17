@@ -30,11 +30,11 @@ object WeatherUtil {
     }
 
     data class UVInfo(val label: String, val spf: String, val color: Long)
-    fun uvLevel(val: Double): UVInfo = when {
-        val <= 2 -> UVInfo("Faible", "", 0xFF00E676)
-        val <= 5 -> UVInfo("Modéré", "SPF30", 0xFFFFD600)
-        val <= 7 -> UVInfo("Élevé", "SPF30+", 0xFFFF6D00)
-        val <= 10 -> UVInfo("Très élevé", "SPF50", 0xFFFF1744)
+    fun uvLevel(uv: Double): UVInfo = when {
+        uv <= 2 -> UVInfo("Faible", "", 0xFF00E676)
+        uv <= 5 -> UVInfo("Modéré", "SPF30", 0xFFFFD600)
+        uv <= 7 -> UVInfo("Élevé", "SPF30+", 0xFFFF6D00)
+        uv <= 10 -> UVInfo("Très élevé", "SPF50", 0xFFFF1744)
         else -> UVInfo("Extrême", "SPF50+ obligatoire", 0xFFD500F9)
     }
 
