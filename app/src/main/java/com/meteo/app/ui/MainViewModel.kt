@@ -5,8 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.meteo.app.data.model.City
 import com.meteo.app.data.model.ForecastResponse
+import com.meteo.app.data.model.GeoFeature
 import com.meteo.app.data.repository.MeteoRepository
 import com.meteo.app.data.repository.Preferences
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -43,6 +46,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _tab = MutableStateFlow(0)
     val tab: StateFlow<Int> = _tab
+
+    private val _suggestions = MutableStateFlow<List<GeoFeature>>(emptyList())
+    val suggestions: StateFlow<List<GeoFeature>> = _suggestions
+
+    private var searchJob: Job? = null
 
     init {
         val cache = prefs.loadForecastCache()
@@ -101,15 +109,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isFav.value = added
     }
 
+    fun searchSuggestions(query: String) {
+        searchJob?.cancel()
+        if (query.length < 2) { _suggestions.value = emptyList(); return }
+        searchJob = viewModelScope.launch {
+            delay(300)
+            try {
+                val res = repo.searchCity(query)
+                _suggestions.value = res.features?.take(8) ?: emptyList()
+            } catch (_: Exception) { _suggestions.value = emptyList() }
+        }
+    }
+
+    fun selectSuggestion(f: GeoFeature) {
+        _suggestions.value = emptyList()
+        val p = f.properties
+        val coords = f.geometry.coordinates
+        val ctx = p.context?.split(",")?.getOrNull(1)?.trim() ?: ""
+        selectCity(City(p.name, coords[1], coords[0], p.postcode ?: "", ctx))
+    }
+
     fun searchCity(query: String) {
         viewModelScope.launch {
             try {
                 val res = repo.searchCity(query)
                 val f = res.features?.firstOrNull() ?: return@launch
-                val p = f.properties
-                val coords = f.geometry.coordinates
-                val ctx = p.context?.split(",")?.getOrNull(1)?.trim() ?: ""
-                selectCity(City(p.name, coords[1], coords[0], p.postcode ?: "", ctx))
+                selectSuggestion(f)
             } catch (_: Exception) { }
         }
     }

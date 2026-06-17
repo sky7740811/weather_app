@@ -32,7 +32,7 @@ fun PrevisionsScreen(viewModel: MainViewModel) {
 
     Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         // Search bar
-        SearchBar(onSearch = { viewModel.searchCity(it) })
+        SearchBar(viewModel)
 
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -47,35 +47,69 @@ fun PrevisionsScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-fun SearchBar(onSearch: (String) -> Unit) {
+fun SearchBar(viewModel: MainViewModel) {
     var query by remember { mutableStateOf("") }
-    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = { Text("Ville...", color = Muted) },
-            modifier = Modifier.weight(1f),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Accent,
-                unfocusedBorderColor = CardBorder,
-                focusedTextColor = Text,
-                unfocusedTextColor = Text,
-                cursorColor = Accent
-            ),
-            shape = RoundedCornerShape(8.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Button(
-            onClick = {
-                if (query.isNotBlank()) {
-                    onSearch(query.trim())
-                    query = ""
+    var showDropdown by remember { mutableStateOf(false) }
+    val suggestions by viewModel.suggestions.collectAsState()
+
+    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = {
+                    query = it
+                    viewModel.searchSuggestions(it)
+                    showDropdown = it.length >= 2
+                },
+                placeholder = { Text("Ville...", color = Muted) },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Accent,
+                    unfocusedBorderColor = CardBorder,
+                    focusedTextColor = Text,
+                    unfocusedTextColor = Text,
+                    cursorColor = Accent
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    if (query.isNotBlank()) {
+                        viewModel.searchCity(query.trim())
+                        query = ""
+                        showDropdown = false
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                shape = RoundedCornerShape(8.dp)
+            ) { Text("OK") }
+        }
+
+        if (showDropdown && suggestions.isNotEmpty()) {
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = { showDropdown = false },
+                modifier = Modifier.fillMaxWidth().background(Card).then(Modifier.clip(RoundedCornerShape(8.dp)))
+            ) {
+                suggestions.forEach { f ->
+                    val p = f.properties
+                    val label = buildString {
+                        append(p.name)
+                        if (p.postcode != null) append(" (${p.postcode})")
+                    }
+                    DropdownMenuItem(
+                        text = { Text(label, fontSize = 13.sp, color = Text) },
+                        onClick = {
+                            viewModel.selectSuggestion(f)
+                            query = ""
+                            showDropdown = false
+                        }
+                    )
                 }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Accent),
-            shape = RoundedCornerShape(8.dp)
-        ) { Text("OK") }
+            }
+        }
     }
 }
 
@@ -215,7 +249,7 @@ fun DayCard(date: String, hours: List<HourData>, city: City) {
             // Hourly scroll
             Row(Modifier.horizontalScroll(rememberScrollState())) {
                 hours.sortedBy { it.hour }.forEach { h ->
-                    HourCell(h)
+                    HourCell(h, date)
                 }
             }
         }
@@ -223,11 +257,12 @@ fun DayCard(date: String, hours: List<HourData>, city: City) {
 }
 
 @Composable
-fun HourCell(h: HourData) {
+fun HourCell(h: HourData, date: String) {
     var showPopup by remember { mutableStateOf(false) }
     val bg = Color(WeatherUtil.tempColor(h.temp.toDouble()))
     val ico = WeatherUtil.weatherIcon(h.weatherCode)
     val uvColor = h.uv?.let { WeatherUtil.uvLevel(it).color } ?: 0x00000000
+    val uvInfo = h.uv?.let { WeatherUtil.uvLevel(it) }
 
     Box {
         Column(
@@ -273,8 +308,13 @@ fun HourCell(h: HourData) {
                         }
                         HorizontalDivider(color = CardBorder)
                         Column(Modifier.padding(12.dp)) {
+                            InfoRow("Date", date)
                             InfoRow("Heure", "${h.hour}h")
-                            if (h.uv != null) InfoRow("UV", "${h.uv}")
+                            if (uvInfo != null) {
+                                InfoRow("UV", "${h.uv} — ${uvInfo.label}")
+                                Spacer(Modifier.height(2.dp))
+                                Text("${uvInfo.spf}", fontSize = 11.sp, color = Color(uvInfo.color))
+                            }
                             if (h.rain != null) InfoRow("Pluie", "${h.rain}%")
                             if (h.cloud != null) InfoRow("Nuages", "${h.cloud}%")
                             if (h.wind != null) InfoRow("Vent", "${h.wind} km/h")
