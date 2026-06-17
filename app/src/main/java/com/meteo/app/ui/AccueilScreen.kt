@@ -23,6 +23,7 @@ fun AccueilScreen(viewModel: MainViewModel) {
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
     val city by viewModel.city.collectAsState()
+    val lastUpdate by viewModel.lastUpdate.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
         if (loading && forecast == null) {
@@ -34,13 +35,13 @@ fun AccueilScreen(viewModel: MainViewModel) {
                 Text(error ?: "", color = Danger)
             }
         } else if (forecast != null) {
-            AccueilContent(forecast!!, city.name)
+            AccueilContent(forecast!!, city.name, lastUpdate)
         }
     }
 }
 
 @Composable
-fun AccueilContent(data: ForecastResponse, cityName: String) {
+fun AccueilContent(data: ForecastResponse, cityName: String, lastUpdate: String?) {
     val hours = data.hourly
     val now = Calendar.getInstance()
     val currentHour = now.get(Calendar.HOUR_OF_DAY)
@@ -82,6 +83,9 @@ fun AccueilContent(data: ForecastResponse, cityName: String) {
         Spacer(Modifier.height(8.dp))
         Text(cityName, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Text)
         Text("$todayDateStr — ${forecastHour}h", fontSize = 12.sp, color = Muted)
+        if (lastUpdate != null) {
+            Text("Dernière màj : $lastUpdate", fontSize = 10.sp, color = Muted, modifier = Modifier.align(Alignment.End))
+        }
 
         Spacer(Modifier.height(20.dp))
 
