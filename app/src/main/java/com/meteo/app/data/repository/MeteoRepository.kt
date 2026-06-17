@@ -38,7 +38,8 @@ class MeteoRepository {
         val response = api.getMultiForecast(lats, lons)
         val results = mutableListOf<Pair<Double?, Int?>>()
         for (r in response) {
-            val dt = r.daily ?: run { results.add(null to null); continue }
+            if (r.daily == null) { results.add(null to null); continue }
+            val dt = r.daily
             val idx = dt.time.indexOf(dateStr)
             if (idx >= 0 && dt.tempMax != null && idx < dt.tempMax.size) {
                 results.add(dt.tempMax[idx] to (dt.weatherCode?.getOrNull(idx)))

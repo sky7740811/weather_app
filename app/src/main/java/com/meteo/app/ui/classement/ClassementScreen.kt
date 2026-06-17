@@ -79,7 +79,7 @@ fun ClassementScreen(viewModel: MainViewModel) {
                             Text("Ville", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.weight(1f))
                             Text("°C", color = Muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.width(36.dp))
                         }
-                        HorizontalDivider(color = CardBorder)
+                        Divider(color = CardBorder)
                         classement.forEachIndexed { rank, (temp, code) ->
                             if (temp != null) {
                                 val name = City.RANK_CITIES.getOrNull(rank)?.name ?: "?"
@@ -95,7 +95,7 @@ fun ClassementScreen(viewModel: MainViewModel) {
                                     Text(name, fontSize = 13.sp, modifier = Modifier.weight(1f))
                                     Text("${temp.toInt()}°", color = tcolor, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.width(36.dp))
                                 }
-                                if (rank < classement.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
+                                if (rank < classement.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
                             }
                         }
                     }

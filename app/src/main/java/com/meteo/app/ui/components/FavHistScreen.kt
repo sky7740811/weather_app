@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +50,7 @@ fun FavoritesScreen(viewModel: MainViewModel) {
                         favs = prefs.getFavs()
                     }) { Text("✕", color = Danger) }
                 }
-                if (i < favs.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
+                if (i < favs.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
             }
         }
     }
@@ -86,7 +87,7 @@ fun HistoryScreen(viewModel: MainViewModel) {
                         hist = prefs.getHist()
                     }) { Text("✕", color = Danger) }
                 }
-                if (i < hist.size - 1) HorizontalDivider(color = CardBorder.copy(alpha = 0.3f))
+                if (i < hist.size - 1) Divider(color = CardBorder.copy(alpha = 0.3f))
             }
         }
     }
