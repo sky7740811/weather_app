@@ -23,6 +23,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _forecast = MutableStateFlow<ForecastResponse?>(null)
     val forecast: StateFlow<ForecastResponse?> = _forecast
 
+    private val _canRefresh = MutableStateFlow(true)
+    val canRefresh: StateFlow<Boolean> = _canRefresh
+
+    init {
+        val cache = prefs.loadForecastCache()
+        if (cache != null) {
+            _city.value = cache.first
+            _forecast.value = cache.second
+        }
+        loadForecast()
+    }
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
@@ -54,16 +65,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadForecast() {
+        if (!_canRefresh.value) return
+        _canRefresh.value = false
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
                 val data = repo.getForecast(_city.value.lat, _city.value.lon)
                 _forecast.value = data
+                prefs.saveForecastCache(_city.value, data)
             } catch (e: Exception) {
                 _error.value = e.message ?: "Erreur de chargement"
             }
             _loading.value = false
+        }
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(30 * 60 * 1000L)
+            _canRefresh.value = true
         }
     }
 

@@ -26,6 +26,10 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                 },
                 actions = {
                     val isFav by viewModel.isFav.collectAsState()
+                    val canRefresh by viewModel.canRefresh.collectAsState()
+                    IconButton(onClick = { viewModel.loadForecast() }, enabled = canRefresh) {
+                        Text("↻", style = MaterialTheme.typography.titleMedium)
+                    }
                     IconButton(onClick = { viewModel.toggleFav() }) {
                         Text(if (isFav) "★" else "☆", style = MaterialTheme.typography.titleMedium)
                     }

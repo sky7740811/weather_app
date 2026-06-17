@@ -2,6 +2,7 @@ package com.meteo.app.data.repository
 
 import android.content.Context
 import com.meteo.app.data.model.City
+import com.meteo.app.data.model.ForecastResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -40,6 +41,26 @@ class Preferences(context: Context) {
 
     fun saveHist(list: List<City>) {
         prefs.edit().putString("hist", gson.toJson(list)).apply()
+    }
+
+    // Forecast cache
+    fun saveForecastCache(city: City, forecast: ForecastResponse) {
+        prefs.edit()
+            .putString("cache_city", gson.toJson(city))
+            .putString("cache_forecast", gson.toJson(forecast))
+            .putLong("cache_time", System.currentTimeMillis())
+            .apply()
+    }
+
+    fun loadForecastCache(): Triple<City, ForecastResponse, Long>? {
+        val cityJson = prefs.getString("cache_city", null) ?: return null
+        val forecastJson = prefs.getString("cache_forecast", null) ?: return null
+        val cacheTime = prefs.getLong("cache_time", 0L)
+        return try {
+            val city = gson.fromJson(cityJson, City::class.java)
+            val forecast = gson.fromJson(forecastJson, ForecastResponse::class.java)
+            Triple(city, forecast, cacheTime)
+        } catch (e: Exception) { null }
     }
 
     fun addHist(city: City) {

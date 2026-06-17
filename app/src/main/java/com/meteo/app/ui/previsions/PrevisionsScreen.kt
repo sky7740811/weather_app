@@ -122,6 +122,7 @@ fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
     val nightHours = (21..23).toList() + (0..9).toList()
     val alerts = mutableListOf<String>()
 
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE)
     val sorted = daysMap.entries.sortedBy { it.key }
     for ((date, hours) in sorted) {
         val dayMax = hours.filter { it.hour in dayHours }.maxOfOrNull { it.temp } ?: 0
@@ -132,14 +133,18 @@ fun generateAlerts(daysMap: Map<String, List<HourData>>): List<String> {
             if (hot.isNotEmpty()) {
                 val dt = date.substringAfterLast("-").toIntOrNull() ?: 0
                 val mo = date.split("-")[1].toIntOrNull() ?: 0
-                val dayName = WeatherUtil.DAYS[Date(date).day.coerceIn(0, 6)]
+                val parsed = sdf.parse(date) ?: continue
+                val cal = Calendar.getInstance().apply { time = parsed }
+                val dayName = WeatherUtil.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]
                 alerts.add("☀️ $dt/$mo ($dayName) ${hot.first().hour}h~${hot.last().hour}h")
             }
         }
         if (nightMin <= 21 && hours.any { it.hour in nightHours && it.temp >= 21 }) {
             val dt = date.substringAfterLast("-").toIntOrNull() ?: 0
             val mo = date.split("-")[1].toIntOrNull() ?: 0
-            val dayName = WeatherUtil.DAYS[Date(date).day.coerceIn(0, 6)]
+            val parsed = sdf.parse(date) ?: continue
+            val cal = Calendar.getInstance().apply { time = parsed }
+            val dayName = WeatherUtil.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]
             alerts.add("🌙 $dt/$mo ($dayName)")
         }
     }
