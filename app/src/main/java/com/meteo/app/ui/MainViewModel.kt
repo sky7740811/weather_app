@@ -76,14 +76,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _city.value = city
         _isFav.value = prefs.isFav(city.name)
         prefs.addHist(city)
-        loadForecast()
+        loadForecast(force = true)
     }
 
-    fun loadForecast() {
-        if (!_canRefresh.value) return
+    fun loadForecast(force: Boolean = false) {
+        if (!_canRefresh.value && !force) return
         val cache = prefs.loadForecastCache()
         val now = System.currentTimeMillis()
-        if (cache != null) {
+        if (cache != null && !force) {
             val cal = Calendar.getInstance()
             cal.timeInMillis = cache.third
             val cacheHour = cal.get(Calendar.HOUR_OF_DAY) to cal.get(Calendar.DAY_OF_YEAR)
