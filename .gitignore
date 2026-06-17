@@ -1,0 +1,14 @@
+*.iml
+.gradle
+.idea
+build
+.cxx
+local.properties
+
+# Android
+/app/build
+
+# IDE
+.vscode
+*.swp
+*.swo
